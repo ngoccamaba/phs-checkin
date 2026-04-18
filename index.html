@@ -10,72 +10,59 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@400;500;600;700;800;900&family=JetBrains+Mono:wght@500;700&display=swap" rel="stylesheet">
   <style>
-    :root {
-      --red: #e53935;
-      --red-dark: #b71c1c;
-      --dark: #0f0f0f;
-      --dark2: #1a1a1a;
-      --surface: #ffffff;
-    }
-    * { font-family: 'Be Vietnam Pro', sans-serif; }
-    body { background: #f4f4f5; overscroll-behavior-y: contain; }
-    code, .mono { font-family: 'JetBrains Mono', monospace; }
+    :root { --red:#e53935; --dark:#0f0f0f; }
+    * { font-family:'Be Vietnam Pro',sans-serif; }
+    body { background:#f4f4f5; overscroll-behavior-y:contain; }
+    .mono { font-family:'JetBrains Mono',monospace; }
 
-    /* QR Reader overrides */
-    #reader { width: 100% !important; border: none !important; }
-    #reader video { border-radius: 12px; object-fit: cover; }
-    #reader__scan_region { background: #111 !important; border-radius: 12px !important; min-height: 260px !important; }
-    #reader__dashboard { display: none !important; }
-    #reader__header_message { display: none !important; }
+    /* QR reader */
+    #reader { width:100% !important; border:none !important; }
+    #reader video { border-radius:12px; object-fit:cover; }
+    #reader__scan_region { background:#111 !important; border-radius:12px !important; min-height:255px !important; }
+    #reader__dashboard, #reader__header_message { display:none !important; }
 
-    /* Pulse ring for active scanning */
-    .scan-ring { box-shadow: 0 0 0 0 rgba(229,57,53,0.4); animation: scanPulse 2s infinite; }
-    @keyframes scanPulse { 70%{box-shadow:0 0 0 12px rgba(229,57,53,0)} 100%{box-shadow:0 0 0 0 rgba(229,57,53,0)} }
-
-    /* Status badge */
-    .badge { display:inline-flex; align-items:center; gap:5px; font-size:11px; font-weight:700; padding:3px 10px; border-radius:20px; letter-spacing:.03em; }
+    /* Animations */
+    @keyframes spin    { to{transform:rotate(360deg)} }
+    @keyframes fadeUp  { from{opacity:0;transform:translateY(10px)} to{opacity:1;transform:translateY(0)} }
+    @keyframes pulse   { 0%,100%{opacity:1} 50%{opacity:.4} }
+    .spin    { animation:spin .8s linear infinite; }
+    .fadeUp  { animation:fadeUp .2s ease both; }
+    .pulsing { animation:pulse 1.2s ease-in-out infinite; }
 
     /* Scrollbar */
-    ::-webkit-scrollbar { width:5px; }
-    ::-webkit-scrollbar-thumb { background:#d1d5db; border-radius:4px; }
+    ::-webkit-scrollbar{width:5px} ::-webkit-scrollbar-thumb{background:#d1d5db;border-radius:4px}
 
-    /* Card hover */
-    .guest-card { transition: transform .15s, box-shadow .15s; }
-    .guest-card:active { transform: scale(.98); }
+    /* Badge */
+    .badge{display:inline-flex;align-items:center;gap:5px;font-size:11px;font-weight:700;padding:3px 10px;border-radius:20px}
 
-    /* Spinner */
-    @keyframes spin { to { transform: rotate(360deg); } }
-    .spin { animation: spin .8s linear infinite; }
-
-    /* Slide in */
-    @keyframes slideUp { from{opacity:0;transform:translateY(16px)} to{opacity:1;transform:translateY(0)} }
-    .slide-up { animation: slideUp .25s ease both; }
-
-    .swal2-timer-progress-bar { background: var(--red) !important; }
-    .swal2-popup { border-radius: 20px !important; font-family: 'Be Vietnam Pro', sans-serif !important; }
+    .swal2-timer-progress-bar{background:var(--red) !important}
+    .swal2-popup{border-radius:20px !important;font-family:'Be Vietnam Pro',sans-serif !important}
   </style>
 </head>
 <body class="text-gray-800 pb-24 antialiased">
 
-<!-- ── HEADER ──────────────────────────────────────────── -->
-<header class="sticky top-0 z-50 shadow-md" style="background:var(--dark); border-bottom:3px solid var(--red)">
+<!-- HEADER -->
+<header class="sticky top-0 z-50 shadow-lg" style="background:var(--dark);border-bottom:3px solid var(--red)">
   <div class="max-w-lg mx-auto px-4 py-3 flex justify-between items-center">
     <div class="flex items-center gap-3">
-      <img src="https://w.ladicdn.com/60116c72c1b48f0011060e0c/logo-phs-20231003172937-urnmm.svg"
-           alt="PHS" class="h-8 bg-white px-2 py-1 rounded-lg">
+      <img src="https://w.ladicdn.com/60116c72c1b48f0011060e0c/logo-phs-20231003172937-urnmm.svg" alt="PHS" class="h-8 bg-white px-2 py-1 rounded-lg">
       <div>
-        <div class="text-white font-black text-base tracking-tight leading-none">EVENT 19/04</div>
-        <div class="text-xs font-bold tracking-widest uppercase mt-0.5" style="color:var(--red)">Check-in System</div>
+        <div class="text-white font-black text-base tracking-tight">EVENT 19/04</div>
+        <div class="text-xs font-bold tracking-widest uppercase" style="color:var(--red)">Check-in System</div>
       </div>
     </div>
     <div class="flex flex-col items-end gap-1.5">
+      <!-- Network -->
       <div id="netBadge" class="badge bg-gray-800 text-white border border-gray-700">
-        <span id="netDot" class="w-2 h-2 rounded-full bg-green-400" style="animation:scanPulse 2s infinite"></span>
+        <span id="netDot" class="w-2 h-2 rounded-full bg-green-400 pulsing"></span>
         <span id="netTxt">Online</span>
       </div>
-      <div id="syncBadge" class="badge bg-yellow-900/60 text-yellow-300 hidden">
-        <svg class="spin w-3 h-3" fill="none" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10" stroke="currentColor" stroke-width="3" stroke-dasharray="31.4" stroke-dashoffset="10"/></svg>
-        Đồng bộ...
+      <!-- Sync status -->
+      <div id="syncBadge" class="badge hidden">
+        <svg id="syncIcon" class="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
+          <path d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/>
+        </svg>
+        <span id="syncTxt">Đồng bộ...</span>
       </div>
     </div>
   </div>
@@ -83,42 +70,44 @@
 
 <main class="max-w-lg mx-auto px-4 pt-5 space-y-5">
 
-  <!-- ── CONFIG BANNER (chỉ hiện khi chưa cấu hình GAS URL) ── -->
+  <!-- CONFIG BANNER -->
   <div id="configBanner" class="hidden bg-amber-50 border-2 border-amber-400 rounded-2xl p-4 text-sm">
-    <p class="font-bold text-amber-800 mb-1">⚙️ Chưa cấu hình GAS URL</p>
-    <p class="text-amber-700 mb-3">Mở file <code class="bg-amber-100 px-1 rounded">index.html</code>, tìm dòng <code class="bg-amber-100 px-1 rounded">GAS_URL</code> và thay bằng URL Web App của bạn.</p>
-    <p class="text-amber-600 text-xs">Đang chạy chế độ <strong>Demo</strong> với dữ liệu mẫu.</p>
+    <p class="font-bold text-amber-800 mb-1">⚙️ Chưa cấu hình GAS URL — đang chạy Demo</p>
+    <p class="text-amber-600 text-xs">Mở index.html, tìm <code class="bg-amber-100 px-1 rounded">GAS_URL</code> và thay bằng URL Web App của bạn.</p>
   </div>
 
-  <!-- ── QUÉT QR ──────────────────────────────────────────── -->
+  <!-- QUÉT QR -->
   <section class="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
     <div class="px-4 pt-4 pb-3 flex justify-between items-center">
       <h2 class="font-extrabold text-gray-900 flex items-center gap-2">
-        <span class="w-8 h-8 rounded-xl flex items-center justify-center text-white text-sm" style="background:var(--red)">
-          <svg width="16" height="16" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5"><path d="M3 7V5a2 2 0 0 1 2-2h2M17 3h2a2 2 0 0 1 2 2v2M21 17v2a2 2 0 0 1-2 2h-2M7 21H5a2 2 0 0 1-2-2v-2"/><rect x="7" y="7" width="4" height="4" rx="1"/><rect x="13" y="7" width="4" height="4" rx="1"/><rect x="7" y="13" width="4" height="4" rx="1"/><path d="M13 13h1v1h-1zM15 15h2v2h-2zM13 17h1v1h-1z"/></svg>
+        <span class="w-8 h-8 rounded-xl flex items-center justify-center text-white" style="background:var(--red)">
+          <svg width="16" height="16" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
+            <path d="M3 7V5a2 2 0 012-2h2M17 3h2a2 2 0 012 2v2M21 17v2a2 2 0 01-2 2h-2M7 21H5a2 2 0 01-2-2v-2"/>
+            <rect x="7" y="7" width="4" height="4" rx="1"/><rect x="13" y="7" width="4" height="4" rx="1"/><rect x="7" y="13" width="4" height="4" rx="1"/>
+          </svg>
         </span>
         Quét mã vé
       </h2>
-      <span id="camBadge" class="badge bg-gray-100 text-gray-500">
+      <span id="camBadge" class="badge bg-yellow-100 text-yellow-700">
         <svg class="spin w-3 h-3" fill="none" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10" stroke="currentColor" stroke-width="3" stroke-dasharray="31.4" stroke-dashoffset="10"/></svg>
         Khởi động...
       </span>
     </div>
 
-    <!-- Camera selector -->
     <div class="px-4 pb-3 space-y-2">
+      <!-- Dropdown camera -->
       <div id="camSelectorWrap" class="hidden items-center gap-2 bg-gray-50 rounded-xl border border-gray-200 p-2">
         <svg class="w-4 h-4 text-gray-400 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path d="M15 10l4.553-2.069A1 1 0 0121 8.868v6.264a1 1 0 01-1.447.894L15 14M3 8a2 2 0 012-2h10a2 2 0 012 2v8a2 2 0 01-2 2H5a2 2 0 01-2-2V8z"/></svg>
-        <select id="camSelect" class="flex-1 bg-transparent text-sm font-semibold text-gray-700 focus:outline-none truncate appearance-none"></select>
+        <select id="camSelect" class="flex-1 bg-transparent text-sm font-semibold text-gray-700 focus:outline-none appearance-none truncate"></select>
         <button id="applyCamBtn" class="text-white text-xs font-bold px-3 py-1.5 rounded-lg shrink-0 transition active:scale-95" style="background:var(--red)">Dùng</button>
       </div>
-
+      <!-- Start/Stop -->
       <div class="flex gap-2">
-        <button id="startBtn" class="flex-1 py-2.5 rounded-xl text-sm font-bold text-white flex items-center justify-center gap-2 transition active:scale-95" style="background:var(--dark)">
+        <button id="startBtn" class="flex-1 py-2.5 rounded-xl text-sm font-bold text-white flex items-center justify-center gap-2 active:scale-95" style="background:var(--dark)">
           <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path d="M15 10l4.553-2.069A1 1 0 0121 8.868v6.264a1 1 0 01-1.447.894L15 14M3 8a2 2 0 012-2h10a2 2 0 012 2v8a2 2 0 01-2 2H5a2 2 0 01-2-2V8z"/></svg>
           Mở Camera
         </button>
-        <button id="stopBtn" class="hidden flex-1 py-2.5 rounded-xl text-sm font-semibold text-gray-700 bg-gray-100 flex items-center justify-center gap-2 transition active:scale-95">
+        <button id="stopBtn" class="hidden flex-1 py-2.5 rounded-xl text-sm font-semibold text-gray-600 bg-gray-100 flex items-center justify-center gap-2 active:scale-95">
           <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><rect x="6" y="6" width="12" height="12" rx="2"/></svg>
           Dừng
         </button>
@@ -126,7 +115,7 @@
     </div>
 
     <!-- Viewport -->
-    <div class="mx-4 mb-4 rounded-xl overflow-hidden border-2 scan-ring" style="border-color:var(--red); background:#111; min-height:270px">
+    <div class="mx-4 mb-4 rounded-xl overflow-hidden border-2" style="border-color:var(--red);background:#111;min-height:265px">
       <div id="reader"></div>
       <div id="readerMsg" class="flex flex-col items-center justify-center gap-2 text-gray-500 py-16">
         <svg class="spin w-8 h-8 text-red-500" fill="none" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10" stroke="currentColor" stroke-width="3" stroke-dasharray="31.4" stroke-dashoffset="10"/></svg>
@@ -134,38 +123,36 @@
       </div>
     </div>
 
-    <!-- Error box -->
-    <div id="camErrorBox" class="hidden mx-4 mb-4 p-3.5 rounded-xl border text-sm leading-relaxed" style="background:#fff5f5; border-color:#fecaca; color:#b91c1c"></div>
-
+    <!-- Error -->
+    <div id="camErrorBox" class="hidden mx-4 mb-4 p-3.5 rounded-xl border text-sm leading-relaxed" style="background:#fff5f5;border-color:#fecaca;color:#b91c1c"></div>
     <p class="text-center text-xs text-gray-400 font-medium pb-4">Đưa mã QR (Mã đơn hàng) vào khung hình</p>
   </section>
 
-  <!-- ── DANH SÁCH KHÁCH ─────────────────────────────────── -->
+  <!-- DANH SÁCH -->
   <section class="bg-white rounded-2xl shadow-sm border border-gray-100">
     <div class="px-4 pt-4 pb-3 flex justify-between items-center">
       <h2 class="font-extrabold text-gray-900 flex items-center gap-2">
-        <span class="w-8 h-8 rounded-xl flex items-center justify-center text-white text-sm" style="background:var(--red)">
-          <svg width="16" height="16" fill="currentColor" viewBox="0 0 24 24"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+        <span class="w-8 h-8 rounded-xl flex items-center justify-center text-white" style="background:var(--red)">
+          <svg width="16" height="16" fill="currentColor" viewBox="0 0 24 24"><path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 00-3-3.87M16 3.13a4 4 0 010 7.75"/></svg>
         </span>
         Khách mời
       </h2>
-      <button onclick="fetchData()" class="flex items-center gap-1.5 text-xs font-bold text-gray-600 bg-gray-50 hover:bg-gray-100 border border-gray-200 px-3 py-1.5 rounded-xl transition">
+      <button onclick="fetchData(true)" class="flex items-center gap-1.5 text-xs font-bold text-gray-600 bg-gray-50 hover:bg-gray-100 border border-gray-200 px-3 py-1.5 rounded-xl transition">
         <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5"><path d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/></svg>
         Làm mới
       </button>
     </div>
 
-    <!-- Filters -->
+    <!-- Filter -->
     <div class="px-4 pb-4 space-y-2.5">
       <div class="relative">
         <svg class="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><path d="M21 21l-4.35-4.35"/></svg>
         <input id="filterSearch" type="text" placeholder="Tìm tên, SĐT, mã đơn..."
-          class="w-full pl-10 pr-4 py-2.5 bg-gray-50 border border-gray-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:border-transparent transition"
-          style="--tw-ring-color:rgba(229,57,53,.3)">
+          class="w-full pl-10 pr-4 py-2.5 bg-gray-50 border border-gray-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:border-transparent transition" style="--tw-ring-color:rgba(229,57,53,.3)">
       </div>
       <div class="grid grid-cols-2 gap-2">
         <div class="relative">
-          <select id="filterStatus" class="w-full bg-gray-50 border border-gray-200 text-sm rounded-xl pl-3 pr-7 py-2.5 appearance-none focus:outline-none font-medium text-gray-700">
+          <select id="filterStatus" class="w-full bg-gray-50 border border-gray-200 text-sm rounded-xl pl-3 pr-7 py-2.5 appearance-none focus:outline-none font-semibold text-gray-700">
             <option value="all">Tất cả</option>
             <option value="checked">Đã Check-in</option>
             <option value="pending">Chưa Check-in</option>
@@ -173,31 +160,30 @@
           <svg class="absolute right-2.5 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-gray-400 pointer-events-none" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5"><path d="M19 9l-7 7-7-7"/></svg>
         </div>
         <div class="relative">
-          <select id="filterType" class="w-full bg-gray-50 border border-gray-200 text-sm rounded-xl pl-3 pr-7 py-2.5 appearance-none focus:outline-none font-medium text-gray-700">
+          <select id="filterType" class="w-full bg-gray-50 border border-gray-200 text-sm rounded-xl pl-3 pr-7 py-2.5 appearance-none focus:outline-none font-semibold text-gray-700">
             <option value="all">Tất cả loại vé</option>
           </select>
           <svg class="absolute right-2.5 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-gray-400 pointer-events-none" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5"><path d="M19 9l-7 7-7-7"/></svg>
         </div>
       </div>
       <!-- Stats -->
-      <div class="flex gap-2">
-        <div class="flex-1 bg-gray-50 rounded-xl border border-gray-100 px-3 py-2 text-center">
-          <div class="text-xs text-gray-400 font-semibold uppercase tracking-wider">Tổng</div>
-          <div id="statTotal" class="text-xl font-black text-gray-900 leading-tight">0</div>
+      <div class="grid grid-cols-3 gap-2">
+        <div class="bg-gray-50 rounded-xl border border-gray-100 py-2 text-center">
+          <div class="text-[10px] text-gray-400 font-bold uppercase tracking-wider">Tổng</div>
+          <div id="statTotal" class="text-2xl font-black text-gray-900">0</div>
         </div>
-        <div class="flex-1 bg-green-50 rounded-xl border border-green-100 px-3 py-2 text-center">
-          <div class="text-xs text-green-600 font-semibold uppercase tracking-wider">Đã đến</div>
-          <div id="statChecked" class="text-xl font-black text-green-700 leading-tight">0</div>
+        <div class="bg-green-50 rounded-xl border border-green-100 py-2 text-center">
+          <div class="text-[10px] text-green-500 font-bold uppercase tracking-wider">Đã đến</div>
+          <div id="statChecked" class="text-2xl font-black text-green-700">0</div>
         </div>
-        <div class="flex-1 bg-red-50 rounded-xl border border-red-100 px-3 py-2 text-center">
-          <div class="text-xs font-semibold uppercase tracking-wider" style="color:var(--red)">Còn lại</div>
-          <div id="statPending" class="text-xl font-black leading-tight" style="color:var(--red)">0</div>
+        <div class="rounded-xl border py-2 text-center" style="background:#fff5f5;border-color:#fecaca">
+          <div class="text-[10px] font-bold uppercase tracking-wider" style="color:var(--red)">Còn lại</div>
+          <div id="statPending" class="text-2xl font-black" style="color:var(--red)">0</div>
         </div>
       </div>
     </div>
 
-    <!-- List -->
-    <div id="guestList" class="divide-y divide-gray-50 max-h-[520px] overflow-y-auto pb-2">
+    <div id="guestList" class="divide-y divide-gray-50 max-h-[540px] overflow-y-auto pb-2">
       <div class="py-14 text-center text-gray-400 text-sm flex flex-col items-center gap-2">
         <svg class="spin w-8 h-8 text-red-400" fill="none" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10" stroke="currentColor" stroke-width="3" stroke-dasharray="31.4" stroke-dashoffset="10"/></svg>
         Đang tải dữ liệu...
@@ -208,23 +194,20 @@
 
 <script>
 // ============================================================
-// ★ CẤU HÌNH — SỬA DUY NHẤT DÒNG NÀY
-// Dán URL Web App GAS của bạn vào đây
-// Ví dụ: 'https://script.google.com/macros/s/ABC.../exec'
+// ★ CẤU HÌNH — CHỈ SỬA DÒNG NÀY
 // ============================================================
-const GAS_URL = 'https://script.google.com/macros/s/AKfycbxDPXwSq-hLUhv2ASRgIlEHOAMk9V59Qgr1dwfN_Bg9Bn9C3s6kC0sl4Xz1OgmyDlPp9w/exec';
+const GAS_URL = 'https://script.google.com/macros/s/AKfycbzIEicjBiw1BKZayZr3MFkIEMCmTt8ZpZZmkoxYM108TlPV8IKMd6FKvMvj48NokuyS-w/exec';
 
 // ============================================================
-// DEMO DATA (dùng khi GAS_URL chưa cấu hình)
+// DEMO DATA
 // ============================================================
 const DEMO_DATA = [
-  { maDon:"1001", ten:"Nguyễn Văn An",    phone:"0901234567", role:"Chủ SHOP",  ve:"Vé VIP",  isCheckedIn:false, soLan:0, time:"" },
-  { maDon:"1002", ten:"Trần Thị Bình",    phone:"0912345678", role:"KOC",        ve:"Vé FREE", isCheckedIn:true,  soLan:1, time:"2026-04-19T09:15:00.000Z" },
-  { maDon:"1003", ten:"Lê Minh Cường",    phone:"0923456789", role:"Đối tác",    ve:"Vé VIP",  isCheckedIn:false, soLan:0, time:"" },
-  { maDon:"1004", ten:"Phạm Thu Dung",    phone:"0934567890", role:"KOC",        ve:"Vé FREE", isCheckedIn:true,  soLan:1, time:"2026-04-19T09:30:00.000Z" },
-  { maDon:"1005", ten:"Hoàng Đức Minh",   phone:"0945678901", role:"Chủ SHOP",  ve:"Vé SVIP", isCheckedIn:false, soLan:0, time:"" },
+  { maDon:"1001", ten:"Nguyễn Văn An",   phone:"0901234567", role:"Chủ SHOP", ve:"Vé VIP",  isCheckedIn:false, soLan:0, time:"" },
+  { maDon:"1002", ten:"Trần Thị Bình",   phone:"0912345678", role:"KOC",      ve:"Vé FREE", isCheckedIn:true,  soLan:1, time:"19/04/2026 09:15:00" },
+  { maDon:"1003", ten:"Lê Minh Cường",   phone:"0923456789", role:"Đối tác",  ve:"Vé VIP",  isCheckedIn:false, soLan:0, time:"" },
+  { maDon:"1004", ten:"Phạm Thu Dung",   phone:"0934567890", role:"KOC",      ve:"Vé FREE", isCheckedIn:true,  soLan:1, time:"19/04/2026 09:30:00" },
+  { maDon:"1005", ten:"Hoàng Đức Minh",  phone:"0945678901", role:"Chủ SHOP", ve:"Vé SVIP", isCheckedIn:false, soLan:0, time:"" },
 ];
-
 const IS_DEMO = !GAS_URL || GAS_URL === 'YOUR_GAS_WEB_APP_URL_HERE';
 
 // ============================================================
@@ -235,35 +218,119 @@ let qrScanner     = null;
 let isProcessing  = false;
 let scannerActive = false;
 let pendingSyncs  = 0;
-let activeCamVal  = null;
 let enumCams      = [];
+let retryQueue    = []; // [{maDon, attempts, nextRetry}]
+let retryTimer    = null;
 
 // ============================================================
-// API LAYER — fetch() thay cho google.script.run
+// API — TẤT CẢ GET, KHÔNG POST → không có CORS preflight
 // ============================================================
+
+/**
+ * Fetch với retry tự động: thử lại tối đa maxTry lần, delay tăng dần
+ */
+async function fetchWithRetry(url, maxTry = 4, baseDelay = 2000) {
+  let lastErr;
+  for (let attempt = 0; attempt < maxTry; attempt++) {
+    try {
+      const ctrl = new AbortController();
+      const tid  = setTimeout(() => ctrl.abort(), 10000); // timeout 10s
+      const res  = await fetch(url, { method:'GET', mode:'cors', signal: ctrl.signal });
+      clearTimeout(tid);
+      if (!res.ok) throw new Error(`HTTP ${res.status}`);
+      return await res.json();
+    } catch(e) {
+      lastErr = e;
+      if (attempt < maxTry - 1) {
+        const delay = baseDelay * Math.pow(1.5, attempt); // 2s, 3s, 4.5s...
+        console.warn(`[API] Attempt ${attempt+1} failed, retry in ${delay}ms:`, e.message);
+        await new Promise(r => setTimeout(r, delay));
+      }
+    }
+  }
+  throw lastErr;
+}
+
 async function apiGetData() {
   if (IS_DEMO) return DEMO_DATA;
-  const res = await fetch(`${GAS_URL}?action=getData`, { method:'GET', mode:'cors' });
-  const json = await res.json();
+  const json = await fetchWithRetry(`${GAS_URL}?action=getData`);
   return json.data || json;
 }
 
 async function apiCheckin(maDon) {
   if (IS_DEMO) return { status:'success' };
-  const res = await fetch(GAS_URL, {
-    method: 'POST',
-    mode:   'cors',
-    headers:{ 'Content-Type':'application/json' },
-    body:   JSON.stringify({ action:'checkin', maDon })
-  });
-  return res.json();
+  // GET với query param — GAS hỗ trợ hoàn toàn, không có CORS preflight
+  const url = `${GAS_URL}?action=checkin&maDon=${encodeURIComponent(maDon)}`;
+  return await fetchWithRetry(url, 5, 1500); // checkin quan trọng hơn, retry nhiều hơn
+}
+
+// ============================================================
+// RETRY QUEUE — đảm bảo checkin luôn ghi vào sheet dù mạng yếu
+// ============================================================
+function enqueueCheckin(maDon) {
+  // Xoá entry cũ nếu có
+  retryQueue = retryQueue.filter(e => e.maDon !== maDon);
+  retryQueue.push({ maDon, attempts: 0, nextRetry: Date.now() });
+  scheduleRetry();
+}
+
+function scheduleRetry() {
+  if (retryTimer) return;
+  retryTimer = setInterval(processRetryQueue, 3000);
+}
+
+async function processRetryQueue() {
+  if (!retryQueue.length) {
+    clearInterval(retryTimer);
+    retryTimer = null;
+    return;
+  }
+
+  const now     = Date.now();
+  const pending = retryQueue.filter(e => e.nextRetry <= now && e.attempts < 10);
+  if (!pending.length) return;
+
+  for (const entry of pending) {
+    try {
+      setSyncUI('syncing', `Đồng bộ ${entry.maDon}...`);
+      const res = await apiCheckin(entry.maDon);
+
+      if (res.status === 'success' || res.status === 'already_checked_in') {
+        // Thành công → xoá khỏi queue
+        retryQueue = retryQueue.filter(e => e.maDon !== entry.maDon);
+        console.log(`[Sync] ✅ ${entry.maDon} synced after ${entry.attempts+1} attempt(s)`);
+      } else {
+        // Lỗi logic (vd: không tìm thấy mã) → không retry nữa
+        retryQueue = retryQueue.filter(e => e.maDon !== entry.maDon);
+        console.error(`[Sync] ❌ ${entry.maDon}: ${res.message}`);
+      }
+    } catch(e) {
+      // Lỗi mạng → retry sau
+      entry.attempts++;
+      entry.nextRetry = Date.now() + Math.min(5000 * entry.attempts, 60000); // max 60s
+      console.warn(`[Sync] ⚠️ ${entry.maDon} retry ${entry.attempts}/10 in ${entry.nextRetry - Date.now()}ms`);
+    }
+  }
+
+  // Cập nhật sync UI
+  if (retryQueue.length === 0) {
+    setSyncUI('done');
+  } else {
+    setSyncUI('syncing', `Đang đồng bộ ${retryQueue.length} mục...`);
+  }
 }
 
 // ============================================================
 // FETCH DATA
 // ============================================================
-async function fetchData() {
-  renderLoading();
+async function fetchData(showLoader = false) {
+  if (showLoader) {
+    document.getElementById('guestList').innerHTML = `
+      <div class="py-14 text-center text-gray-400 text-sm flex flex-col items-center gap-2">
+        <svg class="spin w-8 h-8 text-red-400" fill="none" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10" stroke="currentColor" stroke-width="3" stroke-dasharray="31.4" stroke-dashoffset="10"/></svg>
+        Đang tải...
+      </div>`;
+  }
   try {
     allData = await apiGetData();
     updateTypeFilter();
@@ -272,17 +339,10 @@ async function fetchData() {
     document.getElementById('guestList').innerHTML = `
       <div class="py-10 text-center text-red-600 text-sm px-4">
         <p class="font-bold mb-1">⚠️ Không lấy được dữ liệu</p>
-        <p class="text-xs text-gray-500">${e.message}</p>
+        <p class="text-xs text-gray-400">${e.message}</p>
+        <button onclick="fetchData(true)" class="mt-3 text-xs font-bold text-white px-4 py-2 rounded-xl" style="background:var(--red)">Thử lại</button>
       </div>`;
   }
-}
-
-function renderLoading() {
-  document.getElementById('guestList').innerHTML = `
-    <div class="py-14 text-center text-gray-400 text-sm flex flex-col items-center gap-2">
-      <svg class="spin w-8 h-8 text-red-400" fill="none" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10" stroke="currentColor" stroke-width="3" stroke-dasharray="31.4" stroke-dashoffset="10"/></svg>
-      Đang tải...
-    </div>`;
 }
 
 // ============================================================
@@ -292,24 +352,38 @@ function localNow() {
   const n = new Date(), p = x => x<10?'0'+x:x;
   return `${p(n.getDate())}/${p(n.getMonth()+1)}/${n.getFullYear()} ${p(n.getHours())}:${p(n.getMinutes())}:${p(n.getSeconds())}`;
 }
-
 function dispTime(t) {
   if (!t) return '';
-  if (t.includes(' ')) return t.split(' ')[1];
-  try { const d=new Date(t); if(!isNaN(d)) { const p=x=>x<10?'0'+x:x; return `${p(d.getHours())}:${p(d.getMinutes())}:${p(d.getSeconds())}`; } } catch(e){}
-  return t;
+  if (typeof t === 'string' && t.includes(' ')) return t.split(' ')[1];
+  try { const d=new Date(t); if(!isNaN(d)){const p=x=>x<10?'0'+x:x; return `${p(d.getHours())}:${p(d.getMinutes())}:${p(d.getSeconds())}`;} } catch(e){}
+  return String(t);
 }
 
-function setSyncUI(on) {
-  pendingSyncs = Math.max(0, on ? pendingSyncs+1 : pendingSyncs-1);
-  document.getElementById('syncBadge').classList.toggle('hidden', pendingSyncs===0);
+function setSyncUI(state, text) {
+  const badge = document.getElementById('syncBadge');
+  const icon  = document.getElementById('syncIcon');
+  const txt   = document.getElementById('syncTxt');
+  if (state === 'done' || (!retryQueue.length && state !== 'syncing')) {
+    badge.classList.add('hidden');
+    return;
+  }
+  badge.classList.remove('hidden');
+  if (state === 'syncing') {
+    badge.className = 'badge bg-yellow-100 text-yellow-700';
+    icon.classList.add('spin');
+    txt.textContent = text || 'Đồng bộ...';
+  } else if (state === 'error') {
+    badge.className = 'badge bg-red-100 text-red-600';
+    icon.classList.remove('spin');
+    txt.textContent = text || 'Lỗi đồng bộ';
+  }
 }
 
 function setCamBadge(state) {
   const b = document.getElementById('camBadge');
   const map = {
     loading: ['bg-yellow-100 text-yellow-700', `<svg class="spin w-3 h-3" fill="none" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10" stroke="currentColor" stroke-width="3" stroke-dasharray="31.4" stroke-dashoffset="10"/></svg>Khởi động...`],
-    active:  ['bg-green-100 text-green-700',   `<svg class="w-3 h-3" fill="currentColor" viewBox="0 0 20 20"><circle cx="10" cy="10" r="4"/></svg>Đang quét`],
+    active:  ['bg-green-100 text-green-700',   `<span class="w-2 h-2 rounded-full bg-green-500 pulsing"></span>Đang quét`],
     error:   ['bg-red-100 text-red-700',        `⚠ Lỗi Camera`],
     stopped: ['bg-gray-200 text-gray-500',      `Đã dừng`],
   };
@@ -317,76 +391,73 @@ function setCamBadge(state) {
   b.className = `badge ${cls}`;
   b.innerHTML = html;
 }
-
 function showCamError(msg) {
-  const box = document.getElementById('camErrorBox');
-  box.innerHTML = msg;
-  box.classList.remove('hidden');
+  document.getElementById('camErrorBox').innerHTML = msg;
+  document.getElementById('camErrorBox').classList.remove('hidden');
   document.getElementById('readerMsg').classList.add('hidden');
   setCamBadge('error');
 }
 function hideCamError() { document.getElementById('camErrorBox').classList.add('hidden'); }
 
+function buildCamErrorMsg(err) {
+  const s = String(err.name || err.message || err);
+  if (/NotAllowedError|Permission denied/i.test(s))
+    return `🔒 <b>Trình duyệt chặn quyền camera.</b><br>Nhấn vào biểu tượng 🔒 trên thanh địa chỉ → <em>Cho phép Camera</em> → Tải lại trang.`;
+  if (/NotReadableError|TrackStartError|Could not start/i.test(s))
+    return `⚙️ <b>Camera đang bị ứng dụng khác chiếm.</b><br>Đóng OBS, Zalo, Zoom... rồi tải lại trang.`;
+  if (/NotFoundError|DevicesNotFound/i.test(s))
+    return `📵 <b>Không tìm thấy camera</b> trên thiết bị này.`;
+  return `⚠️ Lỗi: <em>${s}</em>`;
+}
+
 // ============================================================
-// CAMERA ENGINE — chạy trực tiếp trên domain riêng (GitHub Pages)
-// KHÔNG cần facingMode fallback vì không bị sandbox
+// CAMERA ENGINE
 // ============================================================
 async function initCamera() {
   setCamBadge('loading');
   hideCamError();
+  document.getElementById('readerMsg').innerHTML = `
+    <svg class="spin w-8 h-8 text-red-500" fill="none" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10" stroke="currentColor" stroke-width="3" stroke-dasharray="31.4" stroke-dashoffset="10"/></svg>
+    <p class="text-xs font-medium text-gray-400 mt-1">Đang xin quyền...</p>`;
   document.getElementById('readerMsg').classList.remove('hidden');
   document.getElementById('camSelectorWrap').classList.add('hidden');
 
-  // ── Bước 1: Xin quyền camera ──
-  let stream;
+  // Xin quyền trước
   try {
-    stream = await navigator.mediaDevices.getUserMedia({ video:{ facingMode:'environment' } });
-    stream.getTracks().forEach(t => t.stop()); // chỉ xin quyền, không giữ stream
-  } catch(e) {
-    let msg = buildCamErrorMsg(e);
-    showCamError(msg);
-    return;
-  }
+    const s = await navigator.mediaDevices.getUserMedia({ video:{ facingMode:'environment' } });
+    s.getTracks().forEach(t => t.stop());
+  } catch(e) { showCamError(buildCamErrorMsg(e)); return; }
 
-  // ── Bước 2: Enumerate cameras ──
+  // Enumerate
   try {
-    const devices = await Html5Qrcode.getCameras();
-    if (devices && devices.length > 0) {
-      enumCams = devices;
-      buildCamDropdown(devices);
+    const devs = await Html5Qrcode.getCameras();
+    if (devs && devs.length > 0) {
+      enumCams = devs;
+      buildCamDropdown(devs);
     }
-  } catch(e) {
-    console.warn('[Camera] enumerate failed:', e);
-    enumCams = [];
-  }
+  } catch(e) { enumCams = []; }
 
-  // ── Bước 3: Chọn camera tốt nhất và start ──
+  // Chọn camera tốt nhất
   let camConfig;
   if (enumCams.length > 0) {
-    // Ưu tiên cam sau
     const back = enumCams.find(c => /back|rear|sau|environment/i.test(c.label));
     const chosen = back || enumCams[enumCams.length - 1];
-    activeCamVal = chosen.id;
     document.getElementById('camSelect') && (document.getElementById('camSelect').value = chosen.id);
     camConfig = chosen.id;
   } else {
-    // Fallback thuần facingMode
-    activeCamVal = 'environment';
-    camConfig = { facingMode: 'environment' };
+    camConfig = { facingMode:'environment' };
   }
-
   startScanner(camConfig);
 }
 
 function buildCamDropdown(cameras) {
-  const sel  = document.getElementById('camSelect');
-  const wrap = document.getElementById('camSelectorWrap');
+  const sel = document.getElementById('camSelect'), wrap = document.getElementById('camSelectorWrap');
   sel.innerHTML = '';
   cameras.forEach((c, i) => {
     const opt = document.createElement('option');
     opt.value = c.id;
     let lbl = c.label || `Camera ${i+1}`;
-    if (lbl.length > 42) lbl = lbl.slice(0,40)+'…';
+    if (lbl.length > 40) lbl = lbl.slice(0,38)+'…';
     opt.textContent = lbl;
     sel.appendChild(opt);
   });
@@ -396,42 +467,39 @@ function buildCamDropdown(cameras) {
 
 function startScanner(camConfig) {
   document.getElementById('readerMsg').classList.add('hidden');
+  if (!qrScanner) qrScanner = new Html5Qrcode('reader', { verbose:false });
+  const cfg = { fps:15, qrbox:{ width:230, height:230 }, aspectRatio:1.0 };
 
-  if (!qrScanner) {
-    qrScanner = new Html5Qrcode('reader', { verbose: false });
-  }
-
-  const cfg = { fps:15, qrbox:{ width:240, height:240 }, aspectRatio:1.0, disableFlip:false };
-
-  qrScanner.start(camConfig, cfg,
-    // QR decoded
-    (text) => { processCheckin(text.trim()); },
-    // Frame error (bình thường, bỏ qua)
-    () => {}
-  ).then(() => {
-    scannerActive = true;
-    hideCamError();
-    setCamBadge('active');
-    document.getElementById('startBtn').classList.add('hidden');
-    document.getElementById('stopBtn').classList.remove('hidden');
-    document.getElementById('stopBtn').style.display = 'flex';
-  }).catch(err => {
-    console.error('[Scanner]', err);
-    scannerActive = false;
-    showCamError(buildCamErrorMsg(err));
-  });
+  qrScanner.start(camConfig, cfg, (text) => processCheckin(text.trim()), () => {})
+    .then(() => {
+      scannerActive = true;
+      hideCamError();
+      setCamBadge('active');
+      document.getElementById('startBtn').classList.add('hidden');
+      const stopBtn = document.getElementById('stopBtn');
+      stopBtn.classList.remove('hidden');
+      stopBtn.style.display = 'flex';
+    })
+    .catch(err => {
+      scannerActive = false;
+      // Fallback: nếu deviceId fail → thử facingMode
+      if (typeof camConfig === 'string') {
+        startScanner({ facingMode:'environment' });
+        return;
+      }
+      showCamError(buildCamErrorMsg(err));
+    });
 }
 
 async function stopScanner() {
   if (qrScanner) {
-    try { if(qrScanner.isScanning) await qrScanner.stop(); qrScanner.clear(); } catch(e){}
-    qrScanner = null;
-    scannerActive = false;
+    try { if(qrScanner.isScanning) await qrScanner.stop(); qrScanner.clear(); } catch(e) {}
+    qrScanner = null; scannerActive = false;
   }
   document.getElementById('reader').innerHTML = '';
   document.getElementById('readerMsg').innerHTML = `
     <svg class="w-10 h-10 text-gray-600" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5"><path d="M15 10l4.553-2.069A1 1 0 0121 8.868v6.264a1 1 0 01-1.447.894L15 14M3 8a2 2 0 012-2h10a2 2 0 012 2v8a2 2 0 01-2 2H5a2 2 0 01-2-2V8z"/><path d="M3 3l18 18" stroke-linecap="round"/></svg>
-    <p class="text-xs font-medium mt-1">Camera đã dừng</p>`;
+    <p class="text-xs text-gray-500 mt-1">Camera đã dừng</p>`;
   document.getElementById('readerMsg').classList.remove('hidden');
   setCamBadge('stopped');
   document.getElementById('startBtn').classList.remove('hidden');
@@ -439,43 +507,22 @@ async function stopScanner() {
   document.getElementById('stopBtn').classList.add('hidden');
 }
 
-async function switchCam(id) {
-  if (qrScanner) {
-    try { if(qrScanner.isScanning) await qrScanner.stop(); qrScanner.clear(); } catch(e){}
-    qrScanner = null; scannerActive = false;
-  }
-  activeCamVal = id;
-  startScanner(id);
-}
-
 function resumeScanner() {
   isProcessing = false;
   if (qrScanner && scannerActive) { try { qrScanner.resume(); } catch(e){} }
 }
 
-function buildCamErrorMsg(err) {
-  const s = String(err.name || err.message || err);
-  if (/NotAllowedError|Permission denied/i.test(s))
-    return `🔒 <strong>Trình duyệt chặn quyền camera.</strong><br>Nhấn vào biểu tượng 🔒 hoặc 📷 trên thanh địa chỉ → <em>Cho phép Camera</em> → Tải lại trang.`;
-  if (/NotReadableError|TrackStartError|Could not start/i.test(s))
-    return `⚙️ <strong>Camera đang bị ứng dụng khác chiếm.</strong><br>Đóng Zalo, Zoom, OBS... rồi tải lại trang.`;
-  if (/NotFoundError|DevicesNotFound/i.test(s))
-    return `📵 <strong>Không tìm thấy camera</strong> trên thiết bị này.`;
-  if (/OverconstrainedError/i.test(s))
-    return `⚠️ Cấu hình camera không phù hợp. Thử nhấn <strong>Mở Camera</strong> lại.`;
-  return `⚠️ Lỗi camera: <em>${s}</em>`;
-}
-
-// Event listeners camera controls
-document.getElementById('applyCamBtn').addEventListener('click', () => {
+document.getElementById('applyCamBtn').addEventListener('click', async () => {
   const v = document.getElementById('camSelect').value;
-  if (v) switchCam(v);
+  if (!v) return;
+  if (qrScanner) { try { if(qrScanner.isScanning) await qrScanner.stop(); qrScanner.clear(); } catch(e){} qrScanner=null; scannerActive=false; }
+  startScanner(v);
 });
 document.getElementById('startBtn').addEventListener('click', () => initCamera());
-document.getElementById('stopBtn').addEventListener('click', () => stopScanner());
+document.getElementById('stopBtn').addEventListener('click',  () => stopScanner());
 
 // ============================================================
-// CHECK-IN LOGIC (giữ nguyên logic gốc)
+// CHECK-IN LOGIC
 // ============================================================
 function processCheckin(qrStr) {
   if (isProcessing) return;
@@ -485,8 +532,8 @@ function processCheckin(qrStr) {
   if (idx === -1) {
     Swal.fire({
       icon:'error', title:'MÃ KHÔNG HỢP LỆ',
-      html:`<p>Không tìm thấy mã <code class="bg-gray-100 px-1 rounded font-mono">${qrStr}</code> trong danh sách.</p>`,
-      timer:3000, timerProgressBar:true, confirmButtonText:'Thử lại', confirmButtonColor:'#e53935'
+      html:`<p>Không tìm thấy mã <code class="bg-gray-100 px-1.5 py-0.5 rounded mono">${qrStr}</code></p>`,
+      timer:3000, timerProgressBar:true, confirmButtonColor:'#e53935', confirmButtonText:'Thử lại'
     }).then(() => resumeScanner());
     return;
   }
@@ -498,12 +545,12 @@ function processCheckin(qrStr) {
   if (rec.isCheckedIn) {
     Swal.fire({
       icon:'warning', title:'ĐÃ CHECK-IN TRƯỚC ĐÓ',
-      html: `<div class="text-left mt-2 bg-orange-50 p-4 rounded-xl border border-orange-200">
+      html:`<div class="text-left mt-2 bg-orange-50 p-4 rounded-xl border border-orange-200">
         <p class="font-extrabold text-lg text-gray-900">${rec.ten}</p>
         <p class="text-xs text-gray-500 mb-3">${rec.phone} · ${rec.role}</p>
-        <div class="bg-white p-2 rounded-lg text-center border border-orange-100">
-          <p class="text-[10px] text-orange-500 font-bold uppercase tracking-wider">Đã vào lúc</p>
-          <p class="font-black text-orange-600 text-lg">${dispTime(rec.time)}</p>
+        <div class="bg-white p-2.5 rounded-lg text-center border border-orange-100">
+          <p class="text-[10px] text-orange-500 font-bold uppercase">Đã vào lúc</p>
+          <p class="font-black text-orange-600 text-lg mono">${dispTime(rec.time)}</p>
         </div>
       </div>`,
       timer:3500, timerProgressBar:true, confirmButtonText:'Bỏ qua', confirmButtonColor:'#f97316'
@@ -511,80 +558,89 @@ function processCheckin(qrStr) {
     return;
   }
 
-  // Cập nhật local
+  // ── Cập nhật state local ngay lập tức (optimistic) ──
   rec.isCheckedIn = true;
-  rec.time = localNow();
-  rec.soLan = (rec.soLan||0)+1;
-  allData.unshift(allData.splice(idx,1)[0]);
+  rec.time        = localNow();
+  rec.soLan       = (rec.soLan||0) + 1;
+  allData.unshift(allData.splice(idx, 1)[0]);
   applyFilters();
 
   Swal.fire({
     icon:'success', title:'CHECK-IN THÀNH CÔNG! 🎉',
-    html:`<div class="text-left mt-2 bg-gray-50 p-4 rounded-xl border border-gray-200 space-y-3">
-      <div class="flex items-center gap-3">
+    html:`<div class="text-left mt-2 bg-gray-50 p-4 rounded-2xl border border-gray-200">
+      <div class="flex items-center gap-3 mb-3">
         <div class="w-12 h-12 rounded-full bg-green-100 text-green-700 flex items-center justify-center font-black text-xl border-2 border-green-200 shrink-0">
           ${rec.ten.charAt(0).toUpperCase()}
         </div>
         <div>
           <p class="font-extrabold text-gray-900 text-lg leading-tight">${rec.ten}</p>
-          <p class="text-xs text-gray-500">${rec.phone} · ${rec.role}</p>
+          <p class="text-xs text-gray-500 mono">${rec.phone} · ${rec.role}</p>
         </div>
       </div>
       <div class="grid grid-cols-2 gap-2 text-sm">
         <div class="bg-white p-2.5 rounded-xl border border-gray-100 text-center">
           <p class="text-[10px] text-gray-400 font-bold uppercase">Loại vé</p>
-          <p class="font-bold text-red-600 mt-0.5">${rec.ve}</p>
+          <p class="font-bold mt-0.5" style="color:var(--red)">${rec.ve}</p>
         </div>
         <div class="bg-white p-2.5 rounded-xl border border-gray-100 text-center">
-          <p class="text-[10px] text-gray-400 font-bold uppercase">Lần check-in</p>
-          <p class="font-bold text-gray-900 mt-0.5">#${rec.soLan}</p>
+          <p class="text-[10px] text-gray-400 font-bold uppercase">Lần thứ</p>
+          <p class="font-black text-gray-900 text-lg mt-0.5">#${rec.soLan}</p>
         </div>
       </div>
     </div>`,
     timer:3000, timerProgressBar:true, confirmButtonText:'Quét tiếp ▶', confirmButtonColor:'#e53935'
   }).then(() => resumeScanner());
 
-  // Đồng bộ nền
-  setSyncUI(true);
-  apiCheckin(qrStr).then(res => {
-    setSyncUI(false);
-    if (res.status !== 'success' && res.status !== 'already_checked_in') {
-      console.error('[Sync]', res.message);
-    }
-  }).catch(e => { setSyncUI(false); console.error('[Sync]', e); });
+  // ── Ghi vào sheet (với retry queue) ──
+  setSyncUI('syncing', 'Đang ghi sheet...');
+  apiCheckin(qrStr)
+    .then(res => {
+      if (res.status === 'success' || res.status === 'already_checked_in') {
+        setSyncUI('done');
+        console.log('[Sync] ✅ Sheet updated:', qrStr);
+      } else {
+        // Lỗi logic → thêm vào retry queue
+        console.warn('[Sync] Lỗi logic, enqueue retry:', res.message);
+        enqueueCheckin(qrStr);
+      }
+    })
+    .catch(err => {
+      // Lỗi mạng → retry queue tự xử lý
+      console.warn('[Sync] Network error, enqueue retry:', err.message);
+      enqueueCheckin(qrStr);
+    });
 }
 
 // ============================================================
-// FILTER & RENDER (giữ nguyên logic gốc)
+// FILTER & RENDER
 // ============================================================
 function updateTypeFilter() {
-  const types  = [...new Set(allData.map(i=>i.ve).filter(Boolean))];
-  const sel    = document.getElementById('filterType');
-  const cur    = sel.value;
+  const types = [...new Set(allData.map(i => i.ve).filter(Boolean))];
+  const sel   = document.getElementById('filterType');
+  const cur   = sel.value;
   sel.innerHTML = '<option value="all">Tất cả loại vé</option>';
   types.forEach(t => sel.innerHTML += `<option value="${t}">${t}</option>`);
   sel.value = cur;
 }
 
 function applyFilters() {
-  const kw  = document.getElementById('filterSearch').value.toLowerCase();
-  const st  = document.getElementById('filterStatus').value;
-  const tp  = document.getElementById('filterType').value;
+  const kw = document.getElementById('filterSearch').value.toLowerCase();
+  const st = document.getElementById('filterStatus').value;
+  const tp = document.getElementById('filterType').value;
 
   const list = allData.filter(item => {
-    const matchTxt = (item.ten&&item.ten.toLowerCase().includes(kw)) ||
-                     (item.phone&&item.phone.toString().includes(kw)) ||
-                     (item.maDon&&item.maDon.toLowerCase().includes(kw));
-    const matchSt  = st==='all'||( st==='checked'? item.isCheckedIn : !item.isCheckedIn );
-    const matchTp  = tp==='all'|| item.ve===tp;
-    return matchTxt && matchSt && matchTp;
+    const txt = (item.ten&&item.ten.toLowerCase().includes(kw)) ||
+                (item.phone&&item.phone.toString().includes(kw)) ||
+                (item.maDon&&item.maDon.toLowerCase().includes(kw));
+    const s = st==='all' || (st==='checked'?item.isCheckedIn:!item.isCheckedIn);
+    const t = tp==='all' || item.ve===tp;
+    return txt && s && t;
   });
 
-  const checked = list.filter(i=>i.isCheckedIn).length;
+  const checked = list.filter(i => i.isCheckedIn).length;
   document.getElementById('statTotal').textContent   = list.length;
   document.getElementById('statChecked').textContent = checked;
   document.getElementById('statPending').textContent = list.length - checked;
-
   renderList(list);
 }
 
@@ -595,23 +651,23 @@ function renderList(list) {
     return;
   }
   c.innerHTML = list.map(item => `
-    <div class="guest-card flex items-center justify-between px-4 py-3.5 hover:bg-gray-50/80 slide-up ${item.isCheckedIn?'bg-green-50/40':''}">
-      <div class="flex items-center gap-3 w-[63%] min-w-0">
+    <div class="fadeUp flex items-center justify-between px-4 py-3.5 hover:bg-gray-50/80 transition ${item.isCheckedIn?'bg-green-50/30':''}">
+      <div class="flex items-center gap-3 min-w-0 flex-1 mr-3">
         <div class="w-10 h-10 rounded-full shrink-0 flex items-center justify-center font-black text-sm border-2 ${item.isCheckedIn?'bg-green-100 text-green-700 border-green-200':'bg-gray-100 text-gray-500 border-gray-200'}">
           ${item.ten?item.ten.charAt(0).toUpperCase():'?'}
         </div>
         <div class="min-w-0">
           <p class="font-bold text-sm text-gray-900 truncate">${item.ten||''}</p>
-          <div class="flex items-center gap-1.5 mt-0.5 truncate">
-            <span class="text-[10px] font-bold px-1.5 py-0.5 rounded-md border ${item.isCheckedIn?'bg-green-100 text-green-700 border-green-200':'bg-gray-100 text-gray-600 border-gray-200'}">${item.ve||''}</span>
-            <span class="mono text-[11px] text-gray-500 truncate">${item.phone||''}</span>
+          <div class="flex items-center gap-1.5 mt-0.5">
+            <span class="text-[10px] font-bold px-1.5 py-0.5 rounded-md border shrink-0 ${item.isCheckedIn?'bg-green-100 text-green-700 border-green-200':'bg-gray-100 text-gray-600 border-gray-200'}">${item.ve||''}</span>
+            <span class="mono text-[11px] text-gray-400 truncate">${item.phone||''}</span>
           </div>
         </div>
       </div>
       <div class="shrink-0 text-right">
         ${item.isCheckedIn
           ? `<div class="flex flex-col items-end">
-               <svg class="w-6 h-6 text-green-500 drop-shadow-sm" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z"/></svg>
+               <svg class="w-6 h-6 text-green-500" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z"/></svg>
                <p class="text-[10px] text-gray-400 mono mt-0.5">${dispTime(item.time)}</p>
              </div>`
           : `<button onclick="processCheckin('${item.maDon}')"
@@ -626,18 +682,26 @@ function renderList(list) {
   `).join('');
 }
 
-document.getElementById('filterSearch').addEventListener('input', applyFilters);
+document.getElementById('filterSearch').addEventListener('input',  applyFilters);
 document.getElementById('filterStatus').addEventListener('change', applyFilters);
-document.getElementById('filterType').addEventListener('change', applyFilters);
+document.getElementById('filterType').addEventListener('change',   applyFilters);
 
 // ============================================================
 // NETWORK
 // ============================================================
-window.addEventListener('online',  () => { document.getElementById('netDot').className='w-2 h-2 rounded-full bg-green-400'; document.getElementById('netTxt').textContent='Online'; });
+window.addEventListener('online', () => {
+  document.getElementById('netDot').className = 'w-2 h-2 rounded-full bg-green-400 pulsing';
+  document.getElementById('netTxt').textContent = 'Online';
+  // Khi có mạng lại → xử lý retry queue ngay
+  if (retryQueue.length) {
+    retryQueue.forEach(e => e.nextRetry = Date.now()); // đặt lại thời gian retry về ngay bây giờ
+    processRetryQueue();
+  }
+});
 window.addEventListener('offline', () => {
-  document.getElementById('netDot').className='w-2 h-2 rounded-full bg-red-400';
-  document.getElementById('netTxt').textContent='Offline';
-  Swal.fire({ icon:'warning', title:'Mất kết nối mạng', text:'Dữ liệu check-in sẽ không đồng bộ cho đến khi có mạng lại.', confirmButtonColor:'#f59e0b' });
+  document.getElementById('netDot').className = 'w-2 h-2 rounded-full bg-red-400';
+  document.getElementById('netTxt').textContent = 'Offline';
+  Swal.fire({ icon:'warning', title:'Mất kết nối mạng', text:'Dữ liệu check-in sẽ được tự động đồng bộ khi có mạng trở lại.', confirmButtonColor:'#f59e0b', timer:4000, timerProgressBar:true });
 });
 
 // ============================================================
@@ -645,7 +709,7 @@ window.addEventListener('offline', () => {
 // ============================================================
 window.onload = () => {
   if (IS_DEMO) document.getElementById('configBanner').classList.remove('hidden');
-  fetchData();
+  fetchData(true);
   setTimeout(initCamera, 400);
 };
 </script>
